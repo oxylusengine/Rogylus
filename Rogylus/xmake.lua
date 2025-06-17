@@ -1,4 +1,3 @@
-add_repositories("oxylus https://github.com/oxylusengine/xmake-repo.git")
 target("Rogylus")
     set_kind("binary")
     set_languages("cxx23")
