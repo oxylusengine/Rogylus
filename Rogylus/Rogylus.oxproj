@@ -1,0 +1,6 @@
+# Oxylus project file
+[project]
+asset_directory = 'Assets'
+module_name = ''
+name = 'Rogylus'
+start_scene = ''
