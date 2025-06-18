@@ -11,4 +11,5 @@ target("Rogylus")
         output_dir = "Assets",
     })
 
+    add_packages("oxylus")
 target_end()
