@@ -30,6 +30,7 @@ includes("xmake/rules.lua")
 add_requires("oxylus v1.0.0", { configs = {
     lua_bindings = true,
     profile = is_mode("debug"),
+    pic = false,
 } })
 
 includes("Rogylus")
