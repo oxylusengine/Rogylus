@@ -16,7 +16,8 @@ App* create_application(const AppCommandLineArgs& args) {
   spec.name = "Rogylus";
   spec.working_directory = std::filesystem::current_path().string();
   spec.command_line_args = args;
-  spec.assets_path = "Assets";
+  spec.assets_path = "Resources";
+  spec.headless = false;
   const WindowInfo::Icon icon = { };
   spec.window_info = {
 	  .title = spec.name,
@@ -31,7 +32,7 @@ App* create_application(const AppCommandLineArgs& args) {
   };
 
   const auto app = new RogylusApp(spec);
-  app->push_layer(new rog::RogylusLayer());
+  app->push_layer(std::make_unique<rog::RogylusLayer>());
 
   return app;
 }

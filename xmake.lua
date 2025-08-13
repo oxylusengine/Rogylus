@@ -1,6 +1,6 @@
 add_repositories("oxylus https://github.com/oxylusengine/xmake-repo.git")
 set_policy("package.precompiled", false)
-add_rules("mode.debug", "mode.release", "mode.releasedbg")
+add_rules("mode.debug", "mode.release", "mode.dist")
 add_rules("plugin.compile_commands.autoupdate", { outputdir = ".", lsp = "clangd" })
 
 set_project("Rogylus")
@@ -26,11 +26,18 @@ add_cxxflags(
     { tools = { "clang", "clangxx" } })
 
 includes("xmake/rules.lua")
+includes("xmake/options.lua")
 
-add_requires("oxylus v1.0.0", { configs = {
-    lua_bindings = true,
-    profile = is_mode("debug"),
-    pic = false,
-} })
+if has_config("local_dev") then
+    includes("../Oxylus")
+    includes("../Oxylus/xmake/rules.lua")
+else 
+    add_requires("oxylus 906bd0f65843631d6824e69f81ce38a3ba44339b", { configs = {
+        lua_bindings = true,
+        profile = is_mode("debug"),
+        tests = false,
+        pic = false,
+    } })
+end
 
 includes("Rogylus")

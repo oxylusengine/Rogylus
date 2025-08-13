@@ -9,7 +9,7 @@ public:
   ~RogylusLayer() override = default;
   void on_attach() override;
   void on_detach() override;
-  void on_update(const Timestep& delta_time) override;
+  void on_update(const ox::Timestep& delta_time) override;
   void on_render(vuk::Extent3D extent, vuk::Format format) override;
 
   static RogylusLayer* get() { return _instance; }
