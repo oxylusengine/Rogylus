@@ -12,10 +12,11 @@ public:
   void on_update(const ox::Timestep& delta_time) override;
   void on_render(vuk::Extent3D extent, vuk::Format format) override;
 
-  static RogylusLayer* get() { return _instance; }
+  static RogylusLayer* get() { return instance_; }
 
 private:
-  std::shared_ptr<ox::Scene> _scene = nullptr;
-  static RogylusLayer* _instance;
+  static RogylusLayer* instance_;
+
+  std::unique_ptr<ox::Scene> main_scene = nullptr;
 };
 } // namespace rog

@@ -1,15 +1,83 @@
 #include "RogylusLayer.hpp"
 
+#include <Asset/AssetManager.hpp>
+#include <Core/App.hpp>
+#include <Core/Input.hpp>
+#include <Core/Project.hpp>
+#include <UI/ImGuiLayer.hpp>
+#include <UI/SceneHierarchyViewer.hpp>
+#include <imgui.h>
+
 namespace rog {
-RogylusLayer* RogylusLayer::_instance = nullptr;
+RogylusLayer* RogylusLayer::instance_ = nullptr;
 
-RogylusLayer::RogylusLayer() : Layer("Game Layer") { _instance = this; }
+RogylusLayer::RogylusLayer() : Layer("Game Layer") {
+  ZoneScoped;
+  instance_ = this;
+}
 
-void RogylusLayer::on_attach() { }
+void RogylusLayer::on_attach() {
+  ZoneScoped;
 
-void RogylusLayer::on_detach() { }
+  const auto* app = ox::App::get();
+  auto* vfs = app->get_vfs();
+  auto* asset_man = app->get_asset_manager();
 
-void RogylusLayer::on_update(const ox::Timestep& delta_time) { }
+  auto scenes_dir = vfs->resolve_physical_dir(ox::VFS::APP_DIR, "Scenes");
+  auto models_dir = vfs->resolve_physical_dir(ox::VFS::APP_DIR, "Models");
+  auto scripts_dir = vfs->resolve_physical_dir(ox::VFS::APP_DIR, "Scripts");
 
-void RogylusLayer::on_render(vuk::Extent3D extent, vuk::Format format) { }
+  asset_man->import_asset(models_dir + "/map.glb.oxasset");
+  asset_man->import_asset(models_dir + "/player.glb.oxasset");
+  asset_man->import_asset(scripts_dir + "/camera.lua.oxasset");
+  asset_man->import_asset(scripts_dir + "/player.lua.oxasset");
+
+  main_scene = std::make_unique<ox::Scene>("MainScene");
+  main_scene->load_from_file(scenes_dir + "/main_scene.oxscene");
+
+  // NOTE: lua's on_add is called when LuaScriptComponent is added or set,
+  // since script asset is loaded after them we need to notify the entity.
+  main_scene->world.query_builder<ox::LuaScriptComponent>().build().each(
+      [](const flecs::entity& e, ox::LuaScriptComponent&) { e.modified<ox::LuaScriptComponent>(); });
+
+  main_scene->runtime_start();
+}
+
+void RogylusLayer::on_detach() {
+  ZoneScoped;
+  main_scene->runtime_stop();
+}
+
+void RogylusLayer::on_update(const ox::Timestep& delta_time) {
+  ZoneScoped;
+
+  main_scene->runtime_update(delta_time);
+}
+
+void RogylusLayer::on_render(vuk::Extent3D extent, vuk::Format format) {
+  ZoneScoped;
+
+  ox::SceneHierarchyViewer scene_hierarchy_viewer(main_scene.get());
+  bool visible = true;
+  scene_hierarchy_viewer.render("SceneHierarchyViewer", &visible);
+
+  const auto* app = ox::App::get();
+
+  main_scene->on_render(extent, format);
+
+  auto renderer_instance = main_scene->get_renderer_instance();
+  if (renderer_instance != nullptr) {
+    const ox::Renderer::RenderInfo render_info = {
+        .extent = extent,
+        .format = format,
+        .picking_texel = {},
+    };
+    auto scene_view_image = renderer_instance->render(render_info);
+
+    ImGui::Begin("SceneView");
+    ImGui::Image(app->get_imgui_layer()->add_image(std::move(scene_view_image)),
+                 ImVec2{extent.width / 2.f, extent.height / 2.f});
+    ImGui::End();
+  }
+}
 } // namespace rog

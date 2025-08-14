@@ -16,7 +16,7 @@ App* create_application(const AppCommandLineArgs& args) {
   spec.name = "Rogylus";
   spec.working_directory = std::filesystem::current_path().string();
   spec.command_line_args = args;
-  spec.assets_path = "Resources";
+  spec.assets_path = "Assets";
   spec.headless = false;
   const WindowInfo::Icon icon = { };
   spec.window_info = {
