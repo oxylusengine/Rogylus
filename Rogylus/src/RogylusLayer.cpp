@@ -30,15 +30,10 @@ void RogylusLayer::on_attach() {
   asset_man->import_asset(models_dir + "/map.glb.oxasset");
   asset_man->import_asset(models_dir + "/player.glb.oxasset");
   asset_man->import_asset(scripts_dir + "/camera.lua.oxasset");
-  asset_man->import_asset(scripts_dir + "/player.lua.oxasset");
+  asset_man->import_asset(scripts_dir + "/scene.lua.oxasset");
 
   main_scene = std::make_unique<ox::Scene>("MainScene");
   main_scene->load_from_file(scenes_dir + "/main_scene.oxscene");
-
-  // NOTE: lua's on_add is called when LuaScriptComponent is added or set,
-  // since script asset is loaded after them we need to notify the entity.
-  main_scene->world.query_builder<ox::LuaScriptComponent>().build().each(
-      [](const flecs::entity& e, ox::LuaScriptComponent&) { e.modified<ox::LuaScriptComponent>(); });
 
   main_scene->runtime_start();
 }

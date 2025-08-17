@@ -1,0 +1,285 @@
+{
+  "name": "Untitled",
+  "scripts": [
+    {
+      "uuid": "47061079-a90e-4f8b-b4c6-c835a957ba4a"
+    }
+  ],
+  "entities": [
+    {
+      "name": "Level",
+      "tags": [],
+      "components": [
+        {
+          "name": "::ox::Core::TransformComponent",
+          "position": {
+            "x": 0,
+            "y": -1,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        {
+          "name": "::ox::Core::LayerComponent",
+          "layer": 1
+        }
+      ],
+      "children": [
+        {
+          "name": "Map",
+          "tags": [],
+          "components": [
+            {
+              "name": "::ox::Core::TransformComponent",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": -0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            {
+              "name": "::ox::Core::LayerComponent",
+              "layer": 1
+            }
+          ],
+          "children": [
+            {
+              "name": "cliff-corner",
+              "tags": [],
+              "components": [
+                {
+                  "name": "::ox::Core::TransformComponent",
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": -0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                {
+                  "name": "::ox::Core::LayerComponent",
+                  "layer": 1
+                },
+                {
+                  "name": "::ox::Core::MeshComponent",
+                  "mesh_index": 0,
+                  "cast_shadows": true,
+                  "mesh_uuid": "fb0344d3-249b-45af-869c-f3c303b321f8"
+                }
+              ],
+              "children": []
+            },
+            {
+              "name": "cliff-side",
+              "tags": [],
+              "components": [
+                {
+                  "name": "::ox::Core::TransformComponent",
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": -0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                {
+                  "name": "::ox::Core::LayerComponent",
+                  "layer": 1
+                },
+                {
+                  "name": "::ox::Core::MeshComponent",
+                  "mesh_index": 1,
+                  "cast_shadows": true,
+                  "mesh_uuid": "fb0344d3-249b-45af-869c-f3c303b321f8"
+                }
+              ],
+              "children": []
+            },
+            {
+              "name": "grass",
+              "tags": [],
+              "components": [
+                {
+                  "name": "::ox::Core::TransformComponent",
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": -0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                {
+                  "name": "::ox::Core::LayerComponent",
+                  "layer": 1
+                },
+                {
+                  "name": "::ox::Core::MeshComponent",
+                  "mesh_index": 2,
+                  "cast_shadows": true,
+                  "mesh_uuid": "fb0344d3-249b-45af-869c-f3c303b321f8"
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sun",
+      "tags": [],
+      "components": [
+        {
+          "name": "::ox::Core::TransformComponent",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 1.5708,
+            "y": 0.785398,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        {
+          "name": "::ox::Core::LayerComponent",
+          "layer": 1
+        },
+        {
+          "name": "::ox::Core::LightComponent",
+          "type": 0,
+          "color": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "intensity": 10,
+          "range": 1,
+          "radius": 0.025,
+          "length": 0,
+          "outer_cone_angle": 0.785398,
+          "inner_cone_angle": 0,
+          "cast_shadows": true,
+          "shadow_map_res": 1024
+        },
+        {
+          "name": "::ox::Core::AtmosphereComponent",
+          "rayleigh_scattering": {
+            "x": 5.802,
+            "y": 13.558,
+            "z": 33.1
+          },
+          "rayleigh_density": 8,
+          "mie_scattering": {
+            "x": 3.996,
+            "y": 3.996,
+            "z": 3.996
+          },
+          "mie_density": 1.2,
+          "mie_extinction": 4.44,
+          "mie_asymmetry": 3.6,
+          "ozone_absorption": {
+            "x": 0.65,
+            "y": 1.881,
+            "z": 0.085
+          },
+          "ozone_height": 25,
+          "ozone_thickness": 15,
+          "aerial_perspective_start_km": 8
+        }
+      ],
+      "children": []
+    },
+    {
+      "name": "camera",
+      "tags": [],
+      "components": [
+        {
+          "name": "::ox::Core::TransformComponent",
+          "position": {
+            "x": 0,
+            "y": 2.5,
+            "z": 3.5
+          },
+          "rotation": {
+            "x": -0.610865,
+            "y": -1.5708,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        {
+          "name": "::ox::Core::LayerComponent",
+          "layer": 1
+        },
+        {
+          "name": "::ox::Core::CameraComponent",
+          "projection": 0,
+          "fov": 60,
+          "aspect": 1.91111,
+          "far_clip": 1000,
+          "near_clip": 0.01,
+          "tilt": 0,
+          "zoom": 1
+        }
+      ],
+      "children": []
+    }
+  ]
+}
