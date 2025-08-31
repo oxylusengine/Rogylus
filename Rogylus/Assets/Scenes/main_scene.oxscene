@@ -7,171 +7,6 @@
   ],
   "entities": [
     {
-      "name": "Level",
-      "tags": [],
-      "components": [
-        {
-          "name": "::ox::Core::TransformComponent",
-          "position": {
-            "x": 0,
-            "y": -1,
-            "z": 0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          }
-        },
-        {
-          "name": "::ox::Core::LayerComponent",
-          "layer": 1
-        }
-      ],
-      "children": [
-        {
-          "name": "Map",
-          "tags": [],
-          "components": [
-            {
-              "name": "::ox::Core::TransformComponent",
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": -0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            {
-              "name": "::ox::Core::LayerComponent",
-              "layer": 1
-            }
-          ],
-          "children": [
-            {
-              "name": "cliff-corner",
-              "tags": [],
-              "components": [
-                {
-                  "name": "::ox::Core::TransformComponent",
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": -0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                {
-                  "name": "::ox::Core::LayerComponent",
-                  "layer": 1
-                },
-                {
-                  "name": "::ox::Core::MeshComponent",
-                  "mesh_index": 0,
-                  "cast_shadows": true,
-                  "mesh_uuid": "fb0344d3-249b-45af-869c-f3c303b321f8"
-                }
-              ],
-              "children": []
-            },
-            {
-              "name": "cliff-side",
-              "tags": [],
-              "components": [
-                {
-                  "name": "::ox::Core::TransformComponent",
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": -0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                {
-                  "name": "::ox::Core::LayerComponent",
-                  "layer": 1
-                },
-                {
-                  "name": "::ox::Core::MeshComponent",
-                  "mesh_index": 1,
-                  "cast_shadows": true,
-                  "mesh_uuid": "fb0344d3-249b-45af-869c-f3c303b321f8"
-                }
-              ],
-              "children": []
-            },
-            {
-              "name": "grass",
-              "tags": [],
-              "components": [
-                {
-                  "name": "::ox::Core::TransformComponent",
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": -0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                {
-                  "name": "::ox::Core::LayerComponent",
-                  "layer": 1
-                },
-                {
-                  "name": "::ox::Core::MeshComponent",
-                  "mesh_index": 2,
-                  "cast_shadows": true,
-                  "mesh_uuid": "fb0344d3-249b-45af-869c-f3c303b321f8"
-                }
-              ],
-              "children": []
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "sun",
       "tags": [],
       "components": [
@@ -250,11 +85,11 @@
           "name": "::ox::Core::TransformComponent",
           "position": {
             "x": 0,
-            "y": 2.5,
+            "y": 4,
             "z": 3.5
           },
           "rotation": {
-            "x": -0.610865,
+            "x": -0.785398,
             "y": -1.5708,
             "z": 0
           },
@@ -272,7 +107,7 @@
           "name": "::ox::Core::CameraComponent",
           "projection": 0,
           "fov": 60,
-          "aspect": 1.91111,
+          "aspect": 1.75781,
           "far_clip": 1000,
           "near_clip": 0.01,
           "tilt": 0,
@@ -280,6 +115,101 @@
         }
       ],
       "children": []
+    },
+    {
+      "name": "map",
+      "tags": [],
+      "components": [
+        {
+          "name": "::ox::Core::TransformComponent",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        {
+          "name": "::ox::Core::LayerComponent",
+          "layer": 1
+        },
+        {
+          "name": "::ox::Core::RigidBodyComponent",
+          "allowed_dofs": 63,
+          "type": 0,
+          "mass": 1,
+          "linear_drag": 0,
+          "angular_drag": 0.05,
+          "gravity_scale": 1,
+          "allow_sleep": true,
+          "awake": true,
+          "continuous": false,
+          "interpolation": false,
+          "is_sensor": false
+        },
+        {
+          "name": "::ox::Core::BoxColliderComponent",
+          "size": {
+            "x": 25,
+            "y": 0.1,
+            "z": 25
+          },
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "density": 1,
+          "friction": 0.5,
+          "restitution": 0
+        }
+      ],
+      "children": [
+        {
+          "name": "Plane",
+          "tags": [],
+          "components": [
+            {
+              "name": "::ox::Core::TransformComponent",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": -0,
+                "z": 0
+              },
+              "scale": {
+                "x": 50,
+                "y": 50,
+                "z": 50
+              }
+            },
+            {
+              "name": "::ox::Core::LayerComponent",
+              "layer": 1
+            },
+            {
+              "name": "::ox::Core::MeshComponent",
+              "mesh_index": 0,
+              "cast_shadows": true,
+              "mesh_uuid": "d2f07df9-97e8-42b9-98ba-ed3049b7e26a"
+            }
+          ],
+          "children": []
+        }
+      ]
     }
   ]
 }

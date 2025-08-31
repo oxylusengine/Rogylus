@@ -2,15 +2,25 @@ local vfs = App:get_vfs()
 WORKING_DIR = vfs:PROJECT_DIR()
 
 Components = {
-  PlayerComponent = {},
-  ItemComponent = {},
-  InventoryComponent = {},
-  ContainerComponent = {},
-  ContainedByComponent = {},
-  WeaponComponent = {},
-  EnemyComponent = {},
-  ProjectileComponent = {},
-  InvulnerableComponent = {},
+  PlayerComponent,
+  ItemComponent,
+  InventoryComponent,
+  ContainerComponent,
+  ContainedByComponent,
+  WeaponComponent,
+  EnemyComponent,
+  ProjectileComponent,
+  InvulnerableComponent,
+  ConsumableComponent,
+  OneTimeComponent,
+  CooldownComponent,
+  HealComponent,
+  DamageComponent,
+  AttackSpeedComponent,
+  MoveSpeedComponent,
+  LuckComponent,
+  ValueComponent,
+  ValueRangeComponent,
 }
 
 Config = require_script(WORKING_DIR, 'Scripts/config.lua')
@@ -29,7 +39,7 @@ local ui_state = UIState.Gameplay
 
 function on_add(scene)
   Components.PlayerComponent = Component.define(scene, "PlayerComponent", {
-    health = 100,
+    health = 4,
     speed = 3.0,
     level = 1,
     xp = 100,
@@ -47,16 +57,33 @@ function on_add(scene)
     speed = 1.0, health = 10.0, damage = 3.0, gold_reward = 5
   })
 
-  Components.ItemComponent = Component.define(scene, "ItemComponent")
+  Components.ItemComponent = Component.define(scene, "ItemComponent", {
+    in_use = false,
+  })
   Components.InventoryComponent = Component.define(scene, "InventoryComponent")
   Components.ContainerComponent = Component.define(scene, "ContainerComponent")
   Components.ContainedByComponent = Component.define(scene, "ContainedByComponent")
   scene:world():component(Components.ContainedByComponent):add(flecs.Exclusive)
 
-  Components.WeaponComponent = Component.define(scene, "WeaponComponent", {
-    min_damage = 3.0, max_damage = 10.0, cooldown = 1.0, current_cooldown = 3.0
-  })
+  Components.WeaponComponent = Component.define(scene, "WeaponComponent")
   scene:world():component(WeaponComponent):is_a(Components.ItemComponent)
+
+  Components.ConsumableComponent = Component.define(scene, "ConsumableComponent")
+  Components.OneTimeComponent = Component.define(scene, "OneTimeComponent")
+  Components.CooldownComponent = Component.define(scene, "CooldownComponent", {
+    cooldown = 1.0, current_cooldown = 0.0
+  })
+  Components.HealComponent = Component.define(scene, "HealComponent")
+  Components.DamageComponent = Component.define(scene, "DamageComponent")
+  Components.AttackSpeedComponent = Component.define(scene, "AttackSpeedComponent")
+  Components.MoveSpeedComponent = Component.define(scene, "MoveSpeedComponent")
+  Components.LuckComponent = Component.define(scene, "LuckComponent")
+  Components.ValueComponent = Component.define(scene, "ValueComponent", {
+    value = 0
+  })
+  Components.ValueRangeComponent = Component.define(scene, "ValueRangeComponent", {
+    min = 0, max = 0
+  })
 
   Components.ProjectileComponent = Component.define(scene, "ProjectileComponent", {
     damage = 0.0, speed = 5.0, fired = false, lifetime = 5.0, current_lifetime = 0.0
@@ -70,11 +97,10 @@ end
 -- Scene stuff
 players = {}
 enemy_query = {}
-player_log = create_string_vector() -- debug action log
 
-function calculate_damage_dice(min_damage, max_damage, luck_stat)
-  if min_damage >= max_damage then
-    return min_damage
+function calculate_value_dice(min_value, max_value, luck_stat)
+  if min_value >= max_value then
+    return min_value
   end
 
   -- Number of dice to roll based on absolute luck value
@@ -97,7 +123,7 @@ function calculate_damage_dice(min_damage, max_damage, luck_stat)
     chosen_roll = math.min(table.unpack(rolls))
   end
 
-  return math.floor(min_damage + chosen_roll * (max_damage - min_damage))
+  return math.floor(min_value + chosen_roll * (max_value - min_value))
 end
 
 -- Calculate XP an enemy should drop based on player level and enemy type
@@ -147,19 +173,26 @@ function create_projectile(scene, damage, position_at)
   projectile:modified(Core.RigidBodyComponent)
 end
 
-function create_weapon(player, inventory, scene)
-  local weapon = scene:create_entity("weapon", true)
+function create_weapon(name, player, inventory, scene)
+  local weapon = scene:create_entity(name)
   weapon:add(Components.WeaponComponent)
+  weapon:add(Components.ItemComponent)
+  weapon:add(Components.DamageComponent)
+  -- just random values for every weapon for now
+  weapon:add(Components.ValueRangeComponent, { min = 3.0, max = 10.0 })
+  weapon:add(Components.CooldownComponent, { cooldown = 1.0, current_cooldown = 1.0 })
   weapon:add_pair(Components.ContainedByComponent, inventory)
   local weapon_model_root = scene:create_mesh_entity(Assets.weapon_model_asset)
 
+  weapon_model_root:set_name(scene:safe_entity_name("weapon_model"))
   weapon_model_root:child_of(weapon)
-  weapon_model_root:set_name("weapon_model", true)
 
   local weapon_tc = weapon:get_mut(Core.TransformComponent)
   weapon_tc:set_position(vec3.new(0.4, 0.5, 0))
 
   weapon:child_of(player)
+
+  return weapon
 end
 
 function create_enemy(scene, starting_point)
@@ -189,7 +222,7 @@ end
 
 function spawn_enemies(scene, count)
   for i = 1, count, 1 do
-    create_enemy(scene, vec3.new(-i / 2, 0.0, -1.0))
+    create_enemy(scene, vec3.new(math.random(-5, 5), 0.0, math.random(-5, 5)))
   end
 end
 
@@ -198,7 +231,11 @@ function on_scene_start(scene)
 
   local player, player_camera, player_inventory = Player.create_player(scene, vec3.new(0, 0.0, 0))
   players[1] = player
-  create_weapon(player, player_inventory, scene)
+  local weapon1 = create_weapon("weapon1", player, player_inventory, scene)
+  local weapon_ic = weapon1:get_mut(ItemComponent)
+  weapon_ic:set_in_use(true)
+
+  local weapon2 = create_weapon("weapon2", player, player_inventory, scene)
 
   spawn_enemies(scene, 1)
   create_projectile(scene, 0, vec3.new(100, -100, 100)) -- cook
@@ -222,7 +259,6 @@ function on_scene_start(scene)
           enemy_died = true
           scene:world():defer_begin()
           entity:destruct()
-          player_log:add("Enemy died!")
           scene:world():defer_end()
         end
 
@@ -261,28 +297,65 @@ function on_scene_start(scene)
         local wc_data = wc:at(i - 1)
 
         local entity = it:entity(i - 1)
-        local world_pos = scene:get_world_position(entity)
-        if wc_data.current_cooldown > 0.0 then
-          wc_data:set_current_cooldown(wc_data.current_cooldown - App:get_timestep():get_millis() / 1000)
-        elseif wc_data.current_cooldown == 0.0 or wc_data.current_cooldown < 0.0 then
-          local weapon_damage = calculate_damage_dice(wc_data.min_damage, wc_data.max_damage, 1)
-          local weapon_cooldown = wc_data.cooldown
+        local in_use = entity:get(ItemComponent).in_use
 
-          -- add player(owner of this weapon)'s stats
-          --local container = entity:target(ContainedByComponent)
-          --local p = container:target(InventoryComponent)
+        if in_use then
           local player_component = players[1]:get(Components.PlayerComponent)
-          weapon_damage = weapon_damage * player_component.damage_multiplier
-          weapon_cooldown = weapon_cooldown / player_component.attack_speed_multiplier
 
-          wc_data:set_current_cooldown(weapon_cooldown)
+          local can_shoot = true;
 
-          scene:defer(function(s)
-            local enemy_it = flecs.iter(enemy_query)
-            if enemy_it:query_next() then
-              create_projectile(s, weapon_damage, world_pos)
+          local cooldown_component = entity:get_mut(Components.CooldownComponent)
+          if cooldown_component then
+            if cooldown_component.current_cooldown > 0.0 then
+              cooldown_component:set_current_cooldown(
+                cooldown_component.current_cooldown -
+                App:get_timestep():get_millis() / 1000
+              )
+
+              can_shoot = false
+            elseif cooldown_component.current_cooldown == 0.0 or cooldown_component.current_cooldown < 0.0 then
+              local cooldown = cooldown_component.cooldown
+              cooldown = cooldown / player_component.attack_speed_multiplier
+
+              cooldown_component:set_current_cooldown(cooldown)
+
+              can_shoot = true
             end
-          end)
+          end
+
+          if can_shoot then
+            local damage_value = 0
+
+            local damage_component = entity:get(Components.DamageComponent)
+            if damage_component then
+              local value_range_component = entity:get(Components.ValueRangeComponent)
+              if value_range_component then
+                damage_value = calculate_value_dice(
+                  value_range_component.min, value_range_component.max,
+                  player_component.luck
+                )
+              end
+
+              local value_component = entity:get(Components.ValueComponent)
+              if value_component then
+                damage_value = value_component.value
+              end
+
+              if value_component and value_range_component then
+                Log.error("Weapons can't have ValueComponent & ValueRangeComponent at the same time!")
+              end
+
+              damage_value = damage_value * player_component.damage_multiplier
+            end
+
+            scene:defer(function(s)
+              local enemy_it = flecs.iter(enemy_query)
+              if enemy_it:query_next() then
+                local world_pos = scene:get_world_position(entity)
+                create_projectile(s, damage_value, world_pos)
+              end
+            end)
+          end
         end
       end
     end)
@@ -347,7 +420,10 @@ function on_scene_start(scene)
     end)
 end
 
-function on_scene_update(scene, delta_time)
+function on_viewport_render(scene)
+  local renderer_instance = scene:get_renderer_instance()
+  local viewport_offset = renderer_instance:get_viewport_offset()
+
   if ui_state == UIState.LevelUp then
     if ImGui.Begin("LevelUp!", true, ImGuiWindowFlags.AlwaysAutoResize) then
       if #players > 0 then
@@ -370,23 +446,63 @@ function on_scene_update(scene, delta_time)
     if ImGui.Button("Spawn enemies") then
       spawn_enemies(scene, 6)
     end
-    if ImGui.Button("Clear player action log") then
-      player_log:clear()
-    end
   end
   ImGui.End()
 
-  if ImGui.Begin("ActionLog", true, ImGuiWindowFlags.AlwaysAutoResize) then
-    for k = 1, #player_log do
-      v = player_log[k]
-      ImGui.Text(v)
-    end
-  end
-  ImGui.End()
+  local player_stats_pos = viewport_offset
+  player_stats_pos.x = player_stats_pos.x + 80
+  player_stats_pos.y = player_stats_pos.y + 60
+  if #players > 0 then
+    local player_component = players[1]:get_mut(Components.PlayerComponent)
 
-  if ImGui.Begin("PlayerStats", true, ImGuiWindowFlags.AlwaysAutoResize) then
-    if #players > 0 then
-      local player_component = players[1]:get_mut(Components.PlayerComponent)
+    local heart_size = 22
+    local heart_gaps = 3
+    local health_bar_size = (player_component.health + 1) * heart_size + player_component.health * heart_gaps
+
+    ImGui.SetNextWindowPos(player_stats_pos.x, player_stats_pos.y)
+    ImGui.SetNextWindowSize(health_bar_size, 40)
+    if ImGui.Begin("HealthBar", true, ImGuiWindowFlags.NoDecoration + ImGuiWindowFlags.NoDocking + ImGuiWindowFlags.NoBackground) then
+      local p_x, p_y = ImGui.GetCursorScreenPos()
+      local x = p_x + 4.0
+      local y = p_y + 4.0
+
+      local draw_list = ImGui.GetWindowDrawList()
+      local col = ImGui.GetColorU32(1, 0, 0, 1)
+      local ngon_sides = 4
+      for i = 1, player_component.health, 1 do
+        draw_list:AddNgonFilled(vec2.new(x + heart_size * 0.5, y + heart_size * 0.5), heart_size * 0.5, col, ngon_sides)
+        x = x + heart_size + heart_gaps;
+      end
+    end
+    ImGui.End()
+
+    local item_size = 36
+    local inventory_pos = player_stats_pos
+    inventory_pos.y = inventory_pos.y + 50
+    ImGui.SetNextWindowPos(inventory_pos.x, inventory_pos.y)
+    ImGui.SetNextWindowSize(120, 120)
+    if ImGui.Begin("Inventory", true, ImGuiWindowFlags.NoDecoration + ImGuiWindowFlags.NoDocking) then
+      local inv = players[1]:target(Components.InventoryComponent)
+      local items_query = scene:world():query({ { ContainedByComponent, inv } })
+      local item_it = flecs.iter(items_query)
+      while item_it:query_next() do
+        for i = 1, item_it:count() do
+          local entity = item_it:entity(i - 1)
+
+          if entity:has(Components.WeaponComponent) then
+            local wc = entity:get(Components.WeaponComponent)
+            ImGui.Button(entity:name(), item_size, item_size)
+            ImGui.SameLine()
+            -- ImGui.Text("Weapon")
+            -- ImGui.Text("Damage Range: " .. tostring(wc.min_damage) .. "-" .. tostring(wc.max_damage))
+            -- ImGui.Text("Cooldown: " .. tostring(wc.cooldown))
+          end
+        end
+      end
+    end
+    ImGui.End()
+
+    if ImGui.Begin("PlayerStats", true, ImGuiWindowFlags.AlwaysAutoResize) then
       ImGui.Text("health: " .. tostring(player_component.health))
       ImGui.Text("speed: " .. tostring(player_component.speed))
       ImGui.Text("level: " .. tostring(player_component.level))
@@ -411,9 +527,20 @@ function on_scene_update(scene, delta_time)
 
           if entity:has(Components.WeaponComponent) then
             local wc = entity:get(Components.WeaponComponent)
-            ImGui.Text("Weapon")
-            ImGui.Text("Damage Range: " .. tostring(wc.min_damage) .. "-" .. tostring(wc.max_damage))
-            ImGui.Text("Cooldown: " .. tostring(wc.cooldown))
+            ImGui.Text(entity:path())
+            local value_component = entity:get(Components.ValueComponent)
+            local value_range_component = entity:get(Components.ValueRangeComponent)
+            if value_range_component then
+              ImGui.Text("Damage Range: " ..
+                tostring(value_range_component.min) .. "-" .. tostring(value_range_component.max))
+            end
+            if value_component then
+              ImGui.Text("Damage: " .. tostring(value_component.value))
+            end
+            local cooldown_component = entity:get(Components.CooldownComponent)
+            if cooldown_component then
+              ImGui.Text("Cooldown: " .. tostring(cooldown_component.cooldown))
+            end
           end
         end
       end
@@ -433,7 +560,6 @@ function on_contact_added(scene, body1, body2)
 
   local function handle_projectile_hit(projectile, enemy)
     enemy:set_health(enemy.health - projectile.damage)
-    player_log:add("Player damaged enemy: -" .. projectile.damage)
   end
 
   local function handle_player_hit(player, enemy)
