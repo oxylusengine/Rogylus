@@ -58,7 +58,7 @@ function Player.level_up(player, current_xp, new_level)
   end
 end
 
-function Player.gain_xp(player, xp)
+function Player.add_xp(player, xp)
   local new_xp = player.xp + xp
   player:set_xp(new_xp)
   --player_log:add("Added xp to player: " .. tostring(xp))
@@ -68,9 +68,8 @@ function Player.gain_xp(player, xp)
   end
 end
 
-function Player.gain_gold(player, gold)
+function Player.add_gold(player, gold)
   player:set_gold(player.gold + gold)
-  --player_log:add("Added gold to player: " .. tostring(gold))
 end
 
 function Player.take_damage(scene, player, damage)
@@ -88,6 +87,30 @@ function Player.take_damage(scene, player, damage)
   if pc.health <= damage then -- dead
     Log.info("You died!")
   end
+end
+
+function Player.add_health(player, value)
+  player:set_health(player.health + value)
+end
+
+function Player.add_max_health(player, value)
+  player:set_max_health(player.max_health + value)
+end
+
+function Player.add_move_speed_multiplier(player, value)
+  player:set_move_speed_multiplier(player.move_speed_multiplier + value)
+end
+
+function Player.add_luck(player, value)
+  player:set_luck(player.luck + value)
+end
+
+function Player.add_damage_multiplier(player, value)
+  player:set_damage_multiplier(player.damage_multiplier + value)
+end
+
+function Player.add_attack_speed(player, value)
+  player:set_attack_speed_multiplier(player.attack_speed_multiplier + value)
 end
 
 function Player.create_player(scene, starting_point)
@@ -156,9 +179,8 @@ function Player.create_player_system(world, player_camera)
             )
 
             for mat_i = 1, #model.materials, 1 do
-              local material = am:get_material(model.materials[mat_i])
+              local material = am:get_mut_material(model.materials[mat_i])
               material:set_albedo_color(flash_color)
-              am:set_material_dirty(model.materials[mat_i])
             end
           elseif ivc.cooldown == 0.0 or ivc.cooldown < 0.0 then
             world:defer_begin()
@@ -166,9 +188,8 @@ function Player.create_player_system(world, player_camera)
             world:defer_end()
 
             for mat_i = 1, #model.materials, 1 do
-              local material = am:get_material(model.materials[mat_i])
+              local material = am:get_mut_material(model.materials[mat_i])
               material:set_albedo_color(vec4.new(1, 1, 1, 1))
-              am:set_material_dirty(model.materials[mat_i])
             end
           end
         end

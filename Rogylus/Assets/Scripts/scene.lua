@@ -15,12 +15,14 @@ Components = {
   OneTimeComponent,
   CooldownComponent,
   HealComponent,
+  MaxHealthComponent,
   DamageComponent,
   AttackSpeedComponent,
   MoveSpeedComponent,
   LuckComponent,
   ValueComponent,
   ValueRangeComponent,
+  LootComponent,
 }
 
 Config = require_script(WORKING_DIR, 'Scripts/config.lua')
@@ -28,6 +30,8 @@ Assets = require_script(WORKING_DIR, 'Scripts/assets.lua')
 Player = require_script(WORKING_DIR, 'Scripts/player.lua')
 Player.Config = Config
 Player.Components = Components
+Loot = require_script(WORKING_DIR, 'Scripts/loot.lua')
+Loot.Components = Components
 
 local UIState = {
   Gameplay = 1,
@@ -74,6 +78,7 @@ function on_add(scene)
     cooldown = 1.0, current_cooldown = 0.0
   })
   Components.HealComponent = Component.define(scene, "HealComponent")
+  Components.MaxHealthComponent = Component.define(scene, "MaxHealthComponent")
   Components.DamageComponent = Component.define(scene, "DamageComponent")
   Components.AttackSpeedComponent = Component.define(scene, "AttackSpeedComponent")
   Components.MoveSpeedComponent = Component.define(scene, "MoveSpeedComponent")
@@ -92,6 +97,8 @@ function on_add(scene)
   Components.InvulnerableComponent = Component.define(scene, "InvulnerableComponent", {
     cooldown = 3.0
   })
+
+  Components.LootComponent = Component.define(scene, "LootComponent")
 end
 
 -- Scene stuff
@@ -226,6 +233,35 @@ function spawn_enemies(scene, count)
   end
 end
 
+function create_loot(scene, position, type, value)
+  local loot = scene:create_entity()
+  loot:add(Components.LootComponent)
+  loot:add(type)
+  loot:add(Components.ValueComponent, { value = value })
+
+  local loot_model_root = scene:create_mesh_entity(Assets.loot_model_asset)
+
+  loot_model_root:child_of(loot)
+  loot_model_root:set_name("loot_model")
+
+  local tc = loot:get_mut(Core.TransformComponent)
+  tc:set_position(position)
+
+  loot:add(Core.BoxColliderComponent)
+  local loot_bc = loot:get_mut(Core.BoxColliderComponent)
+  loot_bc:set_size(vec3.new(0.3, 0.3, 0.3))
+  loot_bc:set_offset(vec3.new(0, 0.5, 0))
+
+  loot:add(Core.RigidBodyComponent)
+  local loot_rb = loot:get_mut(Core.RigidBodyComponent)
+  loot_rb:set_type(1)
+  loot_rb:set_is_sensor(true)
+  loot_rb:set_allowed_dofs(AllowedDOFs.TranslationX + AllowedDOFs.TranslationZ + AllowedDOFs.RotationY)
+  loot:modified(Core.RigidBodyComponent)
+
+  return loot
+end
+
 function on_scene_start(scene)
   Assets.load_assets(WORKING_DIR)
 
@@ -271,8 +307,11 @@ function on_scene_start(scene)
 
           if enemy_died then
             local xp_reward = calculate_enemy_xp(player_c.level, "normal")
-            Player.gain_xp(player_c, xp_reward)
-            Player.gain_gold(player_c, ec_data.gold_reward)
+            Player.add_xp(player_c, xp_reward)
+            Player.add_gold(player_c, ec_data.gold_reward)
+            scene:defer(function(s)
+              create_loot(s, tc_data.position, HealComponent, 1)
+            end)
           end
 
           local look_direction = player_tc.position - tc_data.position
@@ -558,15 +597,11 @@ function on_contact_added(scene, body1, body2)
   local body1_entity = Physics.get_entity_from_body(body1, scene:world())
   local body2_entity = Physics.get_entity_from_body(body2, scene:world())
 
-  local function handle_projectile_hit(projectile, enemy)
-    enemy:set_health(enemy.health - projectile.damage)
-  end
-
-  local function handle_player_hit(player, enemy)
-    Player.take_damage(scene, player, enemy.damage)
-  end
-
   if body1_entity and body2_entity then
+    -- Player hit
+    local function handle_player_hit(player, enemy)
+      Player.take_damage(scene, player, enemy.damage)
+    end
     if body1_entity:has(Components.PlayerComponent) and body2_entity:has(Components.EnemyComponent) then
       local ec = body2_entity:get(Components.EnemyComponent)
       handle_player_hit(body1_entity, ec)
@@ -577,6 +612,10 @@ function on_contact_added(scene, body1, body2)
     end
 
     if body1:is_sensor() or body2:is_sensor() then
+      -- Enemy hit
+      local function handle_projectile_hit(projectile, enemy)
+        enemy:set_health(enemy.health - projectile.damage)
+      end
       if body1_entity:has(Components.ProjectileComponent) and body2_entity:has(Components.EnemyComponent) then
         local projectile = body1_entity:get(Components.ProjectileComponent)
         local enemy = body2_entity:get_mut(Components.EnemyComponent)
@@ -586,6 +625,43 @@ function on_contact_added(scene, body1, body2)
         local projectile = body2_entity:get(Components.ProjectileComponent)
         local enemy = body1_entity:get_mut(Components.EnemyComponent)
         handle_projectile_hit(projectile, enemy)
+      end
+
+      -- Loot hit
+      local function handle_loot_hit(loot_entity, player_entity)
+        local value = 0
+        local player_mut = player_entity:get_mut(Components.PlayerComponent)
+        if loot_entity:has(Components.ValueComponent) then
+          value = loot_entity:get(Components.ValueComponent).value
+        end
+        if loot_entity:has(Components.HealComponent) then
+          Player.add_health(player_mut, value)
+        end
+        if loot_entity:has(Components.MaxHealthComponent) then
+          Player.add_max_health(player_mut, value)
+        end
+        if loot_entity:has(Components.MoveSpeedComponent) then
+          Player.add_move_speed_multiplier(player_mut, value)
+        end
+        if loot_entity:has(Components.LuckComponent) then
+          Player.add_luck(player_mut, value)
+        end
+        if loot_entity:has(Components.DamageComponent) then
+          player.add_damage_multiplier(player_mut, value)
+        end
+        if loot_entity:has(Components.AttackSpeedComponent) then
+          Player.add_attack_speed(player_mut, value)
+        end
+
+        scene:defer(function(s)
+          loot_entity:destruct()
+        end)
+      end
+      if body1_entity:has(Components.LootComponent) and body2_entity:has(Components.PlayerComponent) then
+        handle_loot_hit(body1_entity, body2_entity)
+      end
+      if body2_entity:has(Components.LootComponent) and body1_entity:has(Components.PlayerComponent) then
+        handle_loot_hit(body2_entity, body1_entity)
       end
     end
   end

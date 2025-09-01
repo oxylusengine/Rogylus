@@ -3,6 +3,7 @@ Assets = {
   enemy_model_asset = {},
   weapon_model_asset = {},
   projectile_model_asset = {},
+  loot_model_asset = {}
 }
 
 function Assets.load_assets(WORKING_DIR)
@@ -15,7 +16,7 @@ function Assets.load_assets(WORKING_DIR)
   Assets.player_model_asset = asset_man:import_asset(models_dir .. "/player.glb.oxasset")
   Assets.weapon_model_asset = asset_man:import_asset(models_dir .. "/weapon.glb.oxasset")
   Assets.projectile_model_asset = asset_man:import_asset(models_dir .. "/projectile.glb.oxasset")
-  asset_man:load_asset(Assets.projectile_model_asset) -- pre load projectile model
+  Assets.loot_model_asset = asset_man:import_asset(models_dir .. "/loot.glb.oxasset")
 end
 
 return Assets
