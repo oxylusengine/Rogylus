@@ -233,35 +233,6 @@ function spawn_enemies(scene, count)
   end
 end
 
-function create_loot(scene, position, type, value)
-  local loot = scene:create_entity()
-  loot:add(Components.LootComponent)
-  loot:add(type)
-  loot:add(Components.ValueComponent, { value = value })
-
-  local loot_model_root = scene:create_mesh_entity(Assets.loot_model_asset)
-
-  loot_model_root:child_of(loot)
-  loot_model_root:set_name("loot_model")
-
-  local tc = loot:get_mut(Core.TransformComponent)
-  tc:set_position(position)
-
-  loot:add(Core.BoxColliderComponent)
-  local loot_bc = loot:get_mut(Core.BoxColliderComponent)
-  loot_bc:set_size(vec3.new(0.3, 0.3, 0.3))
-  loot_bc:set_offset(vec3.new(0, 0.5, 0))
-
-  loot:add(Core.RigidBodyComponent)
-  local loot_rb = loot:get_mut(Core.RigidBodyComponent)
-  loot_rb:set_type(1)
-  loot_rb:set_is_sensor(true)
-  loot_rb:set_allowed_dofs(AllowedDOFs.TranslationX + AllowedDOFs.TranslationZ + AllowedDOFs.RotationY)
-  loot:modified(Core.RigidBodyComponent)
-
-  return loot
-end
-
 function on_scene_start(scene)
   Assets.load_assets(WORKING_DIR)
 
@@ -310,7 +281,7 @@ function on_scene_start(scene)
             Player.add_xp(player_c, xp_reward)
             Player.add_gold(player_c, ec_data.gold_reward)
             scene:defer(function(s)
-              create_loot(s, tc_data.position, HealComponent, 1)
+              Loot.create_physical_loot(s, tc_data.position, HealComponent, 1)
             end)
           end
 
@@ -529,12 +500,11 @@ function on_viewport_render(scene)
           local entity = item_it:entity(i - 1)
 
           if entity:has(Components.WeaponComponent) then
-            local wc = entity:get(Components.WeaponComponent)
-            ImGui.Button(entity:name(), item_size, item_size)
+            if ImGui.Button(entity:name(), item_size, item_size) then
+              local ic = entity:get_mut(Components.ItemComponent)
+              ic:set_in_use(true)
+            end
             ImGui.SameLine()
-            -- ImGui.Text("Weapon")
-            -- ImGui.Text("Damage Range: " .. tostring(wc.min_damage) .. "-" .. tostring(wc.max_damage))
-            -- ImGui.Text("Cooldown: " .. tostring(wc.cooldown))
           end
         end
       end
