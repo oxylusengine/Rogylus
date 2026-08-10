@@ -10,9 +10,9 @@ int main(int argc, char** argv) {
     .with_window({
       .title = "Rogylus",
       .icon = {},
-      .width = 1200,
+      .width = 1600,
       .height = 900,
-      .flags = ox::WindowFlag::Centered | ox::WindowFlag::HighPixelDensity,
+      .flags = ox::WindowFlag::Centered | ox::WindowFlag::HighPixelDensity | ox::WindowFlag::Resizable,
     })
     .with_assets_directory("Assets")
     .with(ox::DefaultModules{})

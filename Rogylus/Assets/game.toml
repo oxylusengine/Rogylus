@@ -1,0 +1,9 @@
+version = 10
+
+[[shader_sessions]]
+root_directory = "Shaders"
+session_name = "game"
+debug_symbols = false
+optimization = "default"
+
+[[shader_sessions.programs]]
