@@ -479,7 +479,7 @@
                     "suspension_damping": 0.5,
                     "max_steer_angle": 0,
                     "max_brake_torque": 1500,
-                    "max_hand_brake_torque": 0,
+                    "max_hand_brake_torque": 4000,
                     "driven": true
                   }
                 }
@@ -571,7 +571,7 @@
                     "suspension_damping": 0.5,
                     "max_steer_angle": 0,
                     "max_brake_torque": 1500,
-                    "max_hand_brake_torque": 0,
+                    "max_hand_brake_torque": 4000,
                     "driven": true
                   }
                 }

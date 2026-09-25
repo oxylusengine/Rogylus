@@ -29,4 +29,5 @@ target("Rogylus")
     add_rules("@oxylus/install_fonts", {
         output_dir = "Assets/Fonts",
     })
+    add_rules("@oxylus/cook_assets", { root_dir = os.scriptdir() .. "/Assets" })
 target_end()

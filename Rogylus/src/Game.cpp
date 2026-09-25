@@ -1,10 +1,8 @@
 #include "Game.hpp"
 
 #include <Asset/AssetFile.hpp>
-#include <Asset/AssetManager.hpp>
 #include <Core/App.hpp>
 #include <Core/Input.hpp>
-#include <Core/Project.hpp>
 #include <Render/RenderContext.hpp>
 #include <Render/Utils/VukCommon.hpp>
 #include <RmlUi/Core.h>
@@ -20,10 +18,8 @@ auto Game::init() -> std::expected<void, std::string> {
   ZoneScoped;
 
   auto& vfs = ox::App::get_vfs();
-  auto& asset_man = ox::App::mod<ox::AssetManager>();
 
-  auto scenes_dir = vfs.resolve_physical_dir(ox::VFS::APP_DIR, "Scenes");
-  auto scripts_dir = vfs.resolve_physical_dir(ox::VFS::APP_DIR, "Scripts");
+  auto scenes_dir = vfs.resolve_physical_dir(ox::VFS::ASSETS_DIR, "Scenes");
   auto fonts_dir = vfs.resolve_physical_dir(ox::VFS::APP_DIR, "Fonts");
   auto shaders_dir = vfs.resolve_physical_dir(ox::VFS::APP_DIR, "Shaders");
 
@@ -32,8 +28,6 @@ auto Game::init() -> std::expected<void, std::string> {
       return std::unexpected(std::format("Failed to load RmlUI font face '{}'!", font));
     }
   }
-
-  asset_man.import_asset(scripts_dir / "scene.lua.oxasset");
 
   main_scene = std::make_unique<ox::Scene>("MainScene");
 

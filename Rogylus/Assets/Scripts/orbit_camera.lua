@@ -1,9 +1,12 @@
 -- Chase camera behind a vehicle: right mouse drag orbits, scroll zooms, recenters when idle
 
+local mathx = require_script("mathx.lua")
+
 local OrbitCamera = {}
 OrbitCamera.__index = OrbitCamera
 
-local TWO_PI = math.pi * 2.0
+local UP = vec3.new(0.0, 1.0, 0.0)
+local FORWARD = vec3.new(0.0, 0.0, 1.0)
 
 local DEFAULTS = {
   distance = 9.0,           -- orbit radius at rest (m)
@@ -30,30 +33,6 @@ local DEFAULTS = {
   max_speed_fov = 15.0,
 }
 
--- frame rate independent blend factor for exponential smoothing
-local function damp(sharpness, dt)
-  return 1.0 - math.exp(-sharpness * dt)
-end
-
--- shortest signed difference between two angles
-local function angle_delta(from, to)
-  return (to - from + math.pi) % TWO_PI - math.pi
-end
-
-local function clamp(v, lo, hi)
-  return math.max(lo, math.min(hi, v))
-end
-
--- yaw of a rotation's +Z axis around world up, nil when the axis is (nearly) vertical
-local function heading_yaw(q)
-  local fx = 2.0 * (q.x * q.z + q.w * q.y)
-  local fz = 1.0 - 2.0 * (q.x * q.x + q.y * q.y)
-  if fx * fx + fz * fz < 1e-4 then
-    return nil
-  end
-  return math.atan(fx, fz)
-end
-
 function OrbitCamera.new(scene, settings)
   local self = setmetatable({}, OrbitCamera)
 
@@ -74,7 +53,6 @@ function OrbitCamera:reset()
   self.distance = self.settings.distance
   self.fov = self.settings.fov
   self.idle_time = 0.0
-  self.last_mouse = nil
 end
 
 function OrbitCamera:set_target(entity)
@@ -89,10 +67,14 @@ function OrbitCamera:register(world)
       if self.target == nil then
         return
       end
+      local body = Physics.get_body(self.target)
+      if body == nil then
+        return
+      end
 
-      local dt = math.min(App.get_timestep():get_seconds(), 0.1)
+      local dt = math.min(it:delta_time(), 0.1)
       self:update_controls(dt)
-      local position, rotation = self:solve(dt)
+      local position, rotation = self:solve(body, dt)
 
       local tc = it:field(0, Core.TransformComponent)
       local cc = it:field(1, Core.CameraComponent)
@@ -108,39 +90,33 @@ end
 function OrbitCamera:update_controls(dt)
   local s = self.settings
   local input = App.mod.Input
+  local focused = self.scene.input_focused
 
-  local scroll = input:get_mouse_scroll_offset_y()
+  local scroll = focused and input:get_mouse_scroll_offset_y() or 0.0
   if scroll ~= 0.0 then
-    self.zoom = clamp(self.zoom - scroll * s.zoom_step, s.min_distance, s.max_distance)
+    self.zoom = mathx.clamp(self.zoom - scroll * s.zoom_step, s.min_distance, s.max_distance)
   end
 
-  if input:get_mouse_held(s.orbit_button) then
-    local mouse = input:get_mouse_position()
-    if self.last_mouse ~= nil then
-      local dx = mouse.x - self.last_mouse.x
-      local dy = mouse.y - self.last_mouse.y
-      self.orbit_yaw = self.orbit_yaw - dx * s.mouse_sensitivity
-      self.pitch = clamp(self.pitch + dy * s.mouse_sensitivity, s.min_pitch, s.max_pitch)
-    end
-    self.last_mouse = mouse
+  if focused and input:get_mouse_held(s.orbit_button) then
+    local delta = input:get_mouse_position_rel()
+    self.orbit_yaw = self.orbit_yaw - delta.x * s.mouse_sensitivity
+    self.pitch = mathx.clamp(self.pitch + delta.y * s.mouse_sensitivity, s.min_pitch, s.max_pitch)
     self.idle_time = 0.0
   else
-    self.last_mouse = nil
     self.idle_time = self.idle_time + dt
     if self.idle_time > s.recenter_delay then
-      local t = damp(s.recenter_sharpness, dt)
-      self.orbit_yaw = self.orbit_yaw + angle_delta(self.orbit_yaw, 0.0) * t
-      self.pitch = self.pitch + (s.pitch - self.pitch) * t
+      local t = mathx.damp(s.recenter_sharpness, dt)
+      self.orbit_yaw = self.orbit_yaw + mathx.angle_delta(self.orbit_yaw, 0.0) * t
+      self.pitch = mathx.lerp(self.pitch, s.pitch, t)
     end
   end
 end
 
 -- returns the camera world position and rotation for this frame
-function OrbitCamera:solve(dt)
+function OrbitCamera:solve(body, dt)
   local s = self.settings
-  local body = Physics.get_body(self.target)
 
-  local car_yaw = heading_yaw(body:get_rotation()) or self.yaw
+  local car_yaw = mathx.yaw_of(body:get_rotation() * FORWARD) or self.yaw
   local velocity = body:get_linear_velocity()
   local speed = glm.length(velocity)
 
@@ -148,17 +124,17 @@ function OrbitCamera:solve(dt)
     self.yaw = car_yaw
     self.initialized = true
   else
-    self.yaw = self.yaw + angle_delta(self.yaw, car_yaw) * damp(s.follow_sharpness, dt)
+    self.yaw = self.yaw + mathx.angle_delta(self.yaw, car_yaw) * mathx.damp(s.follow_sharpness, dt)
   end
 
-  local blend = damp(s.zoom_sharpness, dt)
+  local blend = mathx.damp(s.zoom_sharpness, dt)
   local target_distance = self.zoom + math.min(speed * s.speed_distance, s.max_speed_distance)
   local target_fov = s.fov + math.min(speed * s.speed_fov, s.max_speed_fov)
-  self.distance = self.distance + (target_distance - self.distance) * blend
-  self.fov = self.fov + (target_fov - self.fov) * blend
+  self.distance = mathx.lerp(self.distance, target_distance, blend)
+  self.fov = mathx.lerp(self.fov, target_fov, blend)
 
   -- pivot is rigidly attached to the car, smoothing it would jitter against the fixed physics step
-  local pivot = self.scene:get_world_position(self.target) + vec3.new(0.0, s.pivot_height, 0.0)
+  local pivot = self.scene:get_world_position(self.target) + UP * s.pivot_height
 
   local yaw = self.yaw + self.orbit_yaw
   local pitch = self.pitch
@@ -166,20 +142,7 @@ function OrbitCamera:solve(dt)
   local look_dir = vec3.new(math.sin(yaw) * cos_pitch, -math.sin(pitch), math.cos(yaw) * cos_pitch)
   local position = pivot - look_dir * self.distance
 
-  -- camera looks down -Z, so yaw by an extra half turn, then pitch down: q = Ry(yaw + pi) * Rx(-pitch)
-  local hy = (yaw + math.pi) * 0.5
-  local hp = -pitch * 0.5
-  local sy, cy = math.sin(hy), math.cos(hy)
-  local sp, cp = math.sin(hp), math.cos(hp)
-
-  -- quat has no usable constructor from Lua, so fill in an identity one
-  local rotation = glm.angle_axis(0.0, vec3.new(0.0, 1.0, 0.0))
-  rotation.w = cy * cp
-  rotation.x = cy * sp
-  rotation.y = sy * cp
-  rotation.z = -sy * sp
-
-  return position, rotation
+  return position, glm.quat_look_at(look_dir, UP)
 end
 
 return OrbitCamera
