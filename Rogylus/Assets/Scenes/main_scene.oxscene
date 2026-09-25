@@ -2,9 +2,9 @@
   "name": "Untitled",
   "config": {
     "debug": {
-      "enable_debug_renderer": false,
-      "draw_bounding_boxes": false,
-      "enable_physics_debug_renderer": false
+      "enable_debug_renderer": true,
+      "draw_bounding_boxes": true,
+      "enable_physics_debug_renderer": true
     },
     "color": {
       "tonemapper": 0,
@@ -12,20 +12,57 @@
       "gamma": 2.2
     },
     "gtao": {
-      "enabled": false,
+      "enabled": true,
       "quality_level": 3,
       "thickness": 0.25,
       "radius": 0.5,
       "final_power": 1.2
     },
+    "rtao": {
+      "enabled": false,
+      "ray_count": 2,
+      "radius": 1,
+      "power": 1
+    },
+    "ddgi": {
+      "enabled": true,
+      "rays_per_probe": 144,
+      "max_ray_distance": 50,
+      "max_ray_radiance": 25,
+      "update_max_interval": 8,
+      "update_full_rate_distance": 10,
+      "probe_relocation": true,
+      "min_frontface_distance": 0.5,
+      "shadow_ray_offset": 0.05,
+      "normal_bias": 0.25,
+      "view_bias": 0.1,
+      "hysteresis": 0.97,
+      "max_brightness_step": 0.1,
+      "firefly_ratio": 32,
+      "hysteresis_dark_bias": 0.15,
+      "intensity": 1,
+      "probe_debug_radius": 0.1,
+      "distance_culling": true
+    },
     "bloom": {
       "enabled": true,
       "threshold": 1,
       "soft_threshold": 0.125,
-      "radius": 0.75
+      "radius": 0.75,
+      "intensity": 0.1,
+      "clamp": 4
+    },
+    "particles": {
+      "enabled": true,
+      "sort": true
     },
     "fxaa": {
-      "enabled": true
+      "enabled": false
+    },
+    "upscaler": {
+      "backend": 1,
+      "quality": 0,
+      "sharpness": 0
     },
     "contact_shadows": {
       "enabled": false,
@@ -41,7 +78,7 @@
   ],
   "entities": [
     {
-      "name": "camera",
+      "name": "Player",
       "tags": [],
       "components": [
         {
@@ -49,13 +86,1058 @@
             "position": {
               "x": 0,
               "y": 0,
-              "z": 8
+              "z": 0
             },
             "rotation": {
               "x": 0,
-              "y": -0.707107,
+              "y": 0,
               "z": 0,
-              "w": 0.707107
+              "w": 1
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "::ox::Core::LayerComponent": {
+            "layer": 1
+          }
+        }
+      ],
+      "children": [
+        {
+          "name": "Car",
+          "tags": [],
+          "components": [
+            {
+              "::ox::Core::TransformComponent": {
+                "position": {
+                  "x": 0,
+                  "y": 3,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "w": 1
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            },
+            {
+              "::ox::Core::LayerComponent": {
+                "layer": 1
+              }
+            },
+            {
+              "::ox::Core::RigidBodyComponent": {
+                "allowed_dofs": 63,
+                "type": 2,
+                "mass": 800,
+                "linear_drag": 0.05,
+                "angular_drag": 0.05,
+                "gravity_factor": 1,
+                "friction": 1,
+                "restitution": 0,
+                "center_of_mass_offset": {
+                  "x": 0,
+                  "y": -0.45,
+                  "z": 0.2
+                },
+                "allow_sleep": false,
+                "awake": true,
+                "continuous": true,
+                "interpolation": false,
+                "is_sensor": false
+              }
+            },
+            {
+              "::ox::Core::BoxColliderComponent": {
+                "size": {
+                  "x": 1.2,
+                  "y": 1,
+                  "z": 2
+                },
+                "offset": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "density": 1,
+                "friction": 0.5,
+                "restitution": 0
+              }
+            },
+            {
+              "::ox::Core::VehicleComponent": {
+                "drive_mode": 1,
+                "collision_mode": 1,
+                "up": {
+                  "x": 0,
+                  "y": 1,
+                  "z": 0
+                },
+                "forward": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1
+                },
+                "max_pitch_roll_angle": 60,
+                "max_engine_torque": 100,
+                "min_engine_rpm": 1000,
+                "max_engine_rpm": 6000,
+                "engine_inertia": 0.5,
+                "auto_transmission": true,
+                "clutch_strength": 10,
+                "limited_slip_ratio": 1.4,
+                "input_forward": 0,
+                "input_right": 0,
+                "input_brake": 0,
+                "input_hand_brake": 0
+              }
+            },
+            {
+              "::PlayerComponent": {
+                "id": 0
+              }
+            }
+          ],
+          "children": [
+            {
+              "name": "Car Mesh 0",
+              "tags": [],
+              "components": [
+                {
+                  "::ox::Core::TransformComponent": {
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 1
+                    },
+                    "scale": {
+                      "x": 1,
+                      "y": 1,
+                      "z": 1
+                    }
+                  }
+                },
+                {
+                  "::ox::Core::LayerComponent": {
+                    "layer": 1
+                  }
+                },
+                {
+                  "::ox::Core::MeshComponent": {
+                    "model_uuid": "1cf53558-2803-4aa5-8280-79f2f150aac7",
+                    "mesh_index": 0,
+                    "material_uuid": "00000000-0000-0000-0000-000000000000",
+                    "cast_shadows": true
+                  }
+                }
+              ],
+              "children": []
+            },
+            {
+              "name": "Wheel_FR",
+              "tags": [],
+              "components": [
+                {
+                  "::ox::Core::TransformComponent": {
+                    "position": {
+                      "x": -0.783531,
+                      "y": -1.5,
+                      "z": 1.39084
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": -1,
+                      "z": 0,
+                      "w": 4.37114e-08
+                    },
+                    "scale": {
+                      "x": 0.5,
+                      "y": 0.1,
+                      "z": 0.5
+                    }
+                  }
+                },
+                {
+                  "::ox::Core::LayerComponent": {
+                    "layer": 1
+                  }
+                },
+                {
+                  "::ox::Core::VehicleWheelComponent": {
+                    "attachment": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 0.5,
+                    "width": 0.3,
+                    "suspension_min_length": 0.3,
+                    "suspension_max_length": 0.5,
+                    "suspension_frequency": 1.5,
+                    "suspension_damping": 0.5,
+                    "max_steer_angle": 40,
+                    "max_brake_torque": 1500,
+                    "max_hand_brake_torque": 0,
+                    "driven": false
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "name": "Wheel_FR Mesh 2",
+                  "tags": [],
+                  "components": [
+                    {
+                      "::ox::Core::TransformComponent": {
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "rotation": {
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "scale": {
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    {
+                      "::ox::Core::LayerComponent": {
+                        "layer": 1
+                      }
+                    },
+                    {
+                      "::ox::Core::MeshComponent": {
+                        "model_uuid": "1cf53558-2803-4aa5-8280-79f2f150aac7",
+                        "mesh_index": 2,
+                        "material_uuid": "00000000-0000-0000-0000-000000000000",
+                        "cast_shadows": true
+                      }
+                    }
+                  ],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "Wheel_FL",
+              "tags": [],
+              "components": [
+                {
+                  "::ox::Core::TransformComponent": {
+                    "position": {
+                      "x": 1.01647,
+                      "y": -1.5,
+                      "z": 1.39084
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": -1,
+                      "z": 0,
+                      "w": 1.62921e-07
+                    },
+                    "scale": {
+                      "x": 0.5,
+                      "y": 0.1,
+                      "z": 0.5
+                    }
+                  }
+                },
+                {
+                  "::ox::Core::LayerComponent": {
+                    "layer": 1
+                  }
+                },
+                {
+                  "::ox::Core::VehicleWheelComponent": {
+                    "attachment": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 0.5,
+                    "width": 0.3,
+                    "suspension_min_length": 0.3,
+                    "suspension_max_length": 0.5,
+                    "suspension_frequency": 1.5,
+                    "suspension_damping": 0.5,
+                    "max_steer_angle": 40,
+                    "max_brake_torque": 1500,
+                    "max_hand_brake_torque": 0,
+                    "driven": false
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "name": "Wheel_FL Mesh 1",
+                  "tags": [],
+                  "components": [
+                    {
+                      "::ox::Core::TransformComponent": {
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "rotation": {
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "scale": {
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    {
+                      "::ox::Core::LayerComponent": {
+                        "layer": 1
+                      }
+                    },
+                    {
+                      "::ox::Core::MeshComponent": {
+                        "model_uuid": "1cf53558-2803-4aa5-8280-79f2f150aac7",
+                        "mesh_index": 1,
+                        "material_uuid": "00000000-0000-0000-0000-000000000000",
+                        "cast_shadows": true
+                      }
+                    }
+                  ],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "Wheel_RL",
+              "tags": [],
+              "components": [
+                {
+                  "::ox::Core::TransformComponent": {
+                    "position": {
+                      "x": 1.01647,
+                      "y": -1.5,
+                      "z": -1.56916
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": -1,
+                      "z": 0,
+                      "w": 4.37114e-08
+                    },
+                    "scale": {
+                      "x": 0.5,
+                      "y": 0.1,
+                      "z": 0.5
+                    }
+                  }
+                },
+                {
+                  "::ox::Core::LayerComponent": {
+                    "layer": 1
+                  }
+                },
+                {
+                  "::ox::Core::VehicleWheelComponent": {
+                    "attachment": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 0.5,
+                    "width": 0.3,
+                    "suspension_min_length": 0.3,
+                    "suspension_max_length": 0.5,
+                    "suspension_frequency": 1.5,
+                    "suspension_damping": 0.5,
+                    "max_steer_angle": 0,
+                    "max_brake_torque": 1500,
+                    "max_hand_brake_torque": 0,
+                    "driven": true
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "name": "Wheel_RL Mesh 3",
+                  "tags": [],
+                  "components": [
+                    {
+                      "::ox::Core::TransformComponent": {
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "rotation": {
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "scale": {
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    {
+                      "::ox::Core::LayerComponent": {
+                        "layer": 1
+                      }
+                    },
+                    {
+                      "::ox::Core::MeshComponent": {
+                        "model_uuid": "1cf53558-2803-4aa5-8280-79f2f150aac7",
+                        "mesh_index": 3,
+                        "material_uuid": "00000000-0000-0000-0000-000000000000",
+                        "cast_shadows": true
+                      }
+                    }
+                  ],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "Wheel_RR",
+              "tags": [],
+              "components": [
+                {
+                  "::ox::Core::TransformComponent": {
+                    "position": {
+                      "x": -0.783529,
+                      "y": -1.5,
+                      "z": -1.56916
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": -1,
+                      "z": 0,
+                      "w": 4.37114e-08
+                    },
+                    "scale": {
+                      "x": 0.5,
+                      "y": 0.1,
+                      "z": 0.5
+                    }
+                  }
+                },
+                {
+                  "::ox::Core::LayerComponent": {
+                    "layer": 1
+                  }
+                },
+                {
+                  "::ox::Core::VehicleWheelComponent": {
+                    "attachment": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 0.5,
+                    "width": 0.3,
+                    "suspension_min_length": 0.3,
+                    "suspension_max_length": 0.5,
+                    "suspension_frequency": 1.5,
+                    "suspension_damping": 0.5,
+                    "max_steer_angle": 0,
+                    "max_brake_torque": 1500,
+                    "max_hand_brake_torque": 0,
+                    "driven": true
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "name": "Wheel_RR Mesh 4",
+                  "tags": [],
+                  "components": [
+                    {
+                      "::ox::Core::TransformComponent": {
+                        "position": {
+                          "x": 0,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "rotation": {
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "scale": {
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    {
+                      "::ox::Core::LayerComponent": {
+                        "layer": 1
+                      }
+                    },
+                    {
+                      "::ox::Core::MeshComponent": {
+                        "model_uuid": "1cf53558-2803-4aa5-8280-79f2f150aac7",
+                        "mesh_index": 4,
+                        "material_uuid": "00000000-0000-0000-0000-000000000000",
+                        "cast_shadows": true
+                      }
+                    }
+                  ],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "tire_particle_0",
+              "tags": [],
+              "components": [
+                {
+                  "::ox::Core::TransformComponent": {
+                    "position": {
+                      "x": -0.794451,
+                      "y": -1.80885,
+                      "z": -2.09551
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 1
+                    },
+                    "scale": {
+                      "x": 1,
+                      "y": 1,
+                      "z": 1
+                    }
+                  }
+                },
+                {
+                  "::ox::Core::LayerComponent": {
+                    "layer": 1
+                  }
+                },
+                {
+                  "::ox::Core::ParticleSystemComponent": {
+                    "particle_system": "6c550cab-ab14-463f-a521-c9780fec4667",
+                    "play_on_awake": true,
+                    "simulation_speed": 1,
+                    "seed": 0,
+                    "emission_rate_scale": 1,
+                    "velocity_offset": {
+                      "x": 0,
+                      "y": 0,
+                      "z": -5
+                    },
+                    "override_parameters": false,
+                    "param0": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 0
+                    },
+                    "param1": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 0
+                    },
+                    "param2": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 0
+                    },
+                    "param3": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 0
+                    }
+                  }
+                }
+              ],
+              "children": []
+            },
+            {
+              "name": "tire_particle_1",
+              "tags": [],
+              "components": [
+                {
+                  "::ox::Core::TransformComponent": {
+                    "position": {
+                      "x": 1.04814,
+                      "y": -1.80885,
+                      "z": -2.09551
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 1
+                    },
+                    "scale": {
+                      "x": 1,
+                      "y": 1,
+                      "z": 1
+                    }
+                  }
+                },
+                {
+                  "::ox::Core::LayerComponent": {
+                    "layer": 1
+                  }
+                },
+                {
+                  "::ox::Core::ParticleSystemComponent": {
+                    "particle_system": "6c550cab-ab14-463f-a521-c9780fec4667",
+                    "play_on_awake": true,
+                    "simulation_speed": 1,
+                    "seed": 0,
+                    "emission_rate_scale": 1,
+                    "velocity_offset": {
+                      "x": 0,
+                      "y": 0,
+                      "z": -5
+                    },
+                    "override_parameters": false,
+                    "param0": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 0
+                    },
+                    "param1": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 0
+                    },
+                    "param2": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 0
+                    },
+                    "param3": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 0
+                    }
+                  }
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Floor",
+      "tags": [],
+      "components": [
+        {
+          "::ox::Core::TransformComponent": {
+            "position": {
+              "x": 0,
+              "y": 1,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "::ox::Core::LayerComponent": {
+            "layer": 1
+          }
+        }
+      ],
+      "children": [
+        {
+          "name": "Plane",
+          "tags": [],
+          "components": [
+            {
+              "::ox::Core::TransformComponent": {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "w": 1
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            },
+            {
+              "::ox::Core::LayerComponent": {
+                "layer": 1
+              }
+            }
+          ],
+          "children": [
+            {
+              "name": "Plane Mesh 2",
+              "tags": [],
+              "components": [
+                {
+                  "::ox::Core::TransformComponent": {
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 1
+                    },
+                    "scale": {
+                      "x": 1,
+                      "y": 1,
+                      "z": 1
+                    }
+                  }
+                },
+                {
+                  "::ox::Core::LayerComponent": {
+                    "layer": 1
+                  }
+                },
+                {
+                  "::ox::Core::MeshComponent": {
+                    "model_uuid": "19b6d986-6e55-4188-a099-ea8cf8ce0c97",
+                    "mesh_index": 2,
+                    "material_uuid": "1ce5b3ef-1974-4a3c-a2df-c0126808b77e",
+                    "cast_shadows": true
+                  }
+                },
+                {
+                  "::ox::Core::RigidBodyComponent": {
+                    "allowed_dofs": 63,
+                    "type": 0,
+                    "mass": 1,
+                    "linear_drag": 0.05,
+                    "angular_drag": 0.05,
+                    "gravity_factor": 1,
+                    "friction": 0.2,
+                    "restitution": 0,
+                    "center_of_mass_offset": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "allow_sleep": true,
+                    "awake": true,
+                    "continuous": false,
+                    "interpolation": false,
+                    "is_sensor": false
+                  }
+                },
+                {
+                  "::ox::Core::MeshColliderComponent": {
+                    "offset": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "friction": 0.5,
+                    "restitution": 0,
+                    "convex": false,
+                    "density": 1000
+                  }
+                }
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "Bumps_2",
+          "tags": [],
+          "components": [
+            {
+              "::ox::Core::TransformComponent": {
+                "position": {
+                  "x": 11.8399,
+                  "y": 0.0612301,
+                  "z": 1.42816
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "w": 1
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            },
+            {
+              "::ox::Core::LayerComponent": {
+                "layer": 1
+              }
+            }
+          ],
+          "children": [
+            {
+              "name": "Bumps_2 Mesh 1",
+              "tags": [],
+              "components": [
+                {
+                  "::ox::Core::TransformComponent": {
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 1
+                    },
+                    "scale": {
+                      "x": 1,
+                      "y": 1,
+                      "z": 1
+                    }
+                  }
+                },
+                {
+                  "::ox::Core::LayerComponent": {
+                    "layer": 1
+                  }
+                },
+                {
+                  "::ox::Core::MeshComponent": {
+                    "model_uuid": "19b6d986-6e55-4188-a099-ea8cf8ce0c97",
+                    "mesh_index": 1,
+                    "material_uuid": "00000000-0000-0000-0000-000000000000",
+                    "cast_shadows": true
+                  }
+                },
+                {
+                  "::ox::Core::RigidBodyComponent": {
+                    "allowed_dofs": 63,
+                    "type": 0,
+                    "mass": 1,
+                    "linear_drag": 0.05,
+                    "angular_drag": 0.05,
+                    "gravity_factor": 1,
+                    "friction": 0.2,
+                    "restitution": 0,
+                    "center_of_mass_offset": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "allow_sleep": true,
+                    "awake": true,
+                    "continuous": false,
+                    "interpolation": false,
+                    "is_sensor": false
+                  }
+                },
+                {
+                  "::ox::Core::MeshColliderComponent": {
+                    "offset": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "friction": 0.5,
+                    "restitution": 0,
+                    "convex": false,
+                    "density": 1000
+                  }
+                }
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "Bumps_1",
+          "tags": [],
+          "components": [
+            {
+              "::ox::Core::TransformComponent": {
+                "position": {
+                  "x": 11.2789,
+                  "y": -0.129102,
+                  "z": 5.48657
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "w": 1
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            },
+            {
+              "::ox::Core::LayerComponent": {
+                "layer": 1
+              }
+            }
+          ],
+          "children": [
+            {
+              "name": "Bumps_1 Mesh 0",
+              "tags": [],
+              "components": [
+                {
+                  "::ox::Core::TransformComponent": {
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "w": 1
+                    },
+                    "scale": {
+                      "x": 1,
+                      "y": 1,
+                      "z": 1
+                    }
+                  }
+                },
+                {
+                  "::ox::Core::LayerComponent": {
+                    "layer": 1
+                  }
+                },
+                {
+                  "::ox::Core::MeshComponent": {
+                    "model_uuid": "19b6d986-6e55-4188-a099-ea8cf8ce0c97",
+                    "mesh_index": 0,
+                    "material_uuid": "00000000-0000-0000-0000-000000000000",
+                    "cast_shadows": true
+                  }
+                },
+                {
+                  "::ox::Core::RigidBodyComponent": {
+                    "allowed_dofs": 63,
+                    "type": 0,
+                    "mass": 1,
+                    "linear_drag": 0.05,
+                    "angular_drag": 0.05,
+                    "gravity_factor": 1,
+                    "friction": 0.2,
+                    "restitution": 0,
+                    "center_of_mass_offset": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "allow_sleep": true,
+                    "awake": true,
+                    "continuous": false,
+                    "interpolation": false,
+                    "is_sensor": false
+                  }
+                },
+                {
+                  "::ox::Core::MeshColliderComponent": {
+                    "offset": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "friction": 0.5,
+                    "restitution": 0,
+                    "convex": false,
+                    "density": 1000
+                  }
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "camera",
+      "tags": [],
+      "components": [
+        {
+          "::ox::Core::TransformComponent": {
+            "position": {
+              "x": 12.64,
+              "y": 2.8895,
+              "z": 17.278
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 3.59338e-07,
+              "w": 1
             },
             "scale": {
               "x": 1,
@@ -73,7 +1155,7 @@
           "::ox::Core::CameraComponent": {
             "projection": 0,
             "fov": 60,
-            "aspect": 2.16867,
+            "aspect": 2.26415,
             "far_clip": 1000,
             "near_clip": 0.01,
             "tilt": 0,
@@ -95,10 +1177,10 @@
               "z": 0
             },
             "rotation": {
-              "x": 0.270598,
-              "y": 0.653281,
-              "z": -0.270598,
-              "w": 0.653281
+              "x": 0.166331,
+              "y": 0.832863,
+              "z": -0.392804,
+              "w": 0.352672
             },
             "scale": {
               "x": 1,
@@ -133,14 +1215,32 @@
           }
         },
         {
-          "::ox::Core::SkyComponent": {
-            "solid_color": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
+          "::ox::Core::AtmosphereComponent": {
+            "rayleigh_scattering": {
+              "x": 5.802,
+              "y": 13.558,
+              "z": 33.1
             },
-            "texture": "00000000-0000-0000-0000-000000000000"
+            "rayleigh_density": 8,
+            "mie_scattering": {
+              "x": 3.996,
+              "y": 3.996,
+              "z": 3.996
+            },
+            "mie_density": 1.2,
+            "mie_extinction": 4.44,
+            "mie_asymmetry": 3.6,
+            "mie_haze_amount": 0.7,
+            "mie_haze_scale_height": 11,
+            "ozone_absorption": {
+              "x": 0.65,
+              "y": 1.881,
+              "z": 0.085
+            },
+            "ozone_height": 25,
+            "ozone_thickness": 15,
+            "aerial_perspective_start_km": 8,
+            "aerial_perspective_exposure": 1
           }
         }
       ],

@@ -13,7 +13,7 @@ target("Rogylus")
 
     add_packages("oxylus")
 
-    add_files("./Assets/**")
+    add_files("./Assets/**|.DS_Store|**/.DS_Store")
     add_rules("@oxylus/install_resources", {
         root_dir = os.scriptdir() .. "/Assets",
         output_dir = "Assets",
