@@ -30,9 +30,7 @@ auto Game::init() -> std::expected<void, std::string> {
   }
 
   main_scene = std::make_unique<ox::Scene>("MainScene");
-
   main_scene->load_from_file(scenes_dir / "main_scene.oxscene");
-
   main_scene->runtime_start();
 
   return {};
